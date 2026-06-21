@@ -15,11 +15,47 @@ class SolicitudController {
     }
   }
 
+  static async filtrar(req, res) {
+    try {
+      const { filtro, valor } = req.query;
+
+      if (!filtro || !valor) {
+        return res.status(400).json({ error: 'Debes indicar filtro y valor.' });
+      }
+
+      const filtros = {};
+
+      if (filtro === 'prioridad') {
+        filtros.prioridad = valor;
+      } else if (filtro === 'tipo') {
+        filtros.tipo_solicitud = valor;
+      } else {
+        return res.status(400).json({ error: 'Filtro no válido.' });
+      }
+
+      const solicitudes = await SolicitudService.obtenerSolicitudes(filtros);
+      res.status(200).json(solicitudes);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
   static async crear(req, res) {
     try {
       const datos = req.body;
       const nueva = await SolicitudService.crearSolicitud(datos);
       res.status(201).json({ mensaje: 'Solicitud creada exitosamente', solicitud: nueva });
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  }
+
+  static async actualizar(req, res) {
+    try {
+      const { id } = req.params;
+      const datos = req.body;
+      const actualizada = await SolicitudService.actualizarSolicitud(parseInt(id), datos);
+      res.status(200).json({ mensaje: 'Solicitud actualizada exitosamente', solicitud: actualizada });
     } catch (error) {
       res.status(400).json({ error: error.message });
     }

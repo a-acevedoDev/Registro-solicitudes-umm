@@ -5,12 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro de Solicitudes Académicas</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body { background-color: #f8f9fa; }
-        #heroCarousel img { height: 40vh; object-fit: cover; }
-        .card { border: none; border-radius: 10px; }
-        .table th, .table td { vertical-align: middle; }
-    </style>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
@@ -51,7 +47,11 @@
                 <div class="card shadow-sm">
                     <div class="card-body">
                         <h4 class="card-title mb-3">Nueva Solicitud</h4>
+                        <div id="modoEdicionAviso" class="alert alert-info d-none py-2" role="alert">
+                            Editando solicitud existente.
+                        </div>
                         <form id="solicitudForm" class="needs-validation" novalidate>
+                            <input type="hidden" id="solicitudId">
                             <div class="mb-3">
                                 <label for="nombre" class="form-label">Nombre del Estudiante</label>
                                 <input type="text" class="form-control" id="nombre" required>
@@ -102,7 +102,10 @@
                                     Debes ingresar una descripción.
                                 </div>
                             </div>
-                            <button type="submit" class="btn btn-primary w-100">Enviar Solicitud</button>
+                            <div class="d-grid gap-2 d-md-flex">
+                                <button type="submit" class="btn btn-primary flex-fill" id="botonFormulario">Enviar Solicitud</button>
+                                <button type="button" class="btn btn-outline-secondary d-none" id="cancelarEdicion">Cancelar edición</button>
+                            </div>
                         </form>
                     </div>
                 </div>
@@ -110,7 +113,36 @@
             <div class="col-md-7 mt-4 mt-md-0">
                 <div class="card shadow-sm">
                     <div class="card-body">
-                        <h4 class="card-title mb-3">Solicitudes Registradas</h4>
+                        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-3">
+                            <h4 class="card-title mb-0">Solicitudes Registradas</h4>
+                            <div class="filters-bar">
+                                <div class="row g-2 align-items-end">
+                                    <div class="col-12 col-lg-5">
+                                        <label for="filtroPrioridad" class="form-label mb-1">Filtrar por Prioridad</label>
+                                        <select class="form-select" id="filtroPrioridad">
+                                            <option value="">Todas</option>
+                                            <option value="Alta">Alta</option>
+                                            <option value="Media">Media</option>
+                                            <option value="Baja">Baja</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-12 col-lg-5">
+                                        <label for="filtroTipo" class="form-label mb-1">Filtrar por Tipo</label>
+                                        <select class="form-select" id="filtroTipo">
+                                            <option value="">Todos</option>
+                                            <option value="Evaluación">Evaluación</option>
+                                            <option value="Asistencia">Asistencia</option>
+                                            <option value="Contenidos">Contenidos</option>
+                                            <option value="Plataforma">Plataforma</option>
+                                            <option value="Otro">Otro</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-12 col-lg-2 d-grid">
+                                        <button type="button" class="btn btn-outline-secondary" id="limpiarFiltros">Limpiar Filtros</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         <div class="table-responsive">
                             <table class="table table-hover table-bordered">
                                 <thead class="table-dark">
@@ -119,6 +151,7 @@
                                         <th>Asignatura</th>
                                         <th>Tipo</th>
                                         <th>Prioridad</th>
+                                        <th class="table-actions">Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tablaSolicitudes">
@@ -131,114 +164,67 @@
         </div>
     </div>
 
+    <div class="modal fade" id="detalleSolicitudModal" tabindex="-1" aria-labelledby="detalleSolicitudModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title" id="detalleSolicitudModalLabel">Detalle de la Solicitud</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="detalle-item">
+                                <span class="detalle-label">Nombre del estudiante</span>
+                                <div id="detalleNombre" class="detalle-valor"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="detalle-item">
+                                <span class="detalle-label">Correo institucional</span>
+                                <div id="detalleCorreo" class="detalle-valor"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="detalle-item">
+                                <span class="detalle-label">Asignatura</span>
+                                <div id="detalleAsignatura" class="detalle-valor"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="detalle-item">
+                                <span class="detalle-label">Tipo de solicitud</span>
+                                <div id="detalleTipo" class="detalle-valor"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="detalle-item">
+                                <span class="detalle-label">Prioridad</span>
+                                <div id="detallePrioridad" class="detalle-valor"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="detalle-item">
+                                <span class="detalle-label">Fecha de ingreso</span>
+                                <div id="detalleFecha" class="detalle-valor"></div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="detalle-item">
+                                <span class="detalle-label">Descripción de la solicitud</span>
+                                <div id="detalleDescripcion" class="detalle-valor detalle-descripcion"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        const formulario = document.getElementById('solicitudForm');
-        const tablaSolicitudes = document.getElementById('tablaSolicitudes');
-        const alertaMensaje = document.getElementById('alertaMensaje');
-        const API_URL = 'http://localhost:3000/api/solicitudes';
-
-        document.addEventListener('DOMContentLoaded', obtenerSolicitudes);
-
-        formulario.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-
-            formulario.classList.add('was-validated');
-
-            if (!formulario.checkValidity()) {
-                mostrarAlerta('Faltan campos obligatorios. Revisa el formulario.', 'danger');
-                return;
-            }
-
-            const nombre_estudiante = document.getElementById('nombre').value;
-            const correo_institucional = document.getElementById('correo').value;
-            const asignatura = document.getElementById('asignatura').value;
-            const tipo_solicitud = document.getElementById('tipoSolicitud').value;
-            const prioridad = document.getElementById('prioridad').value;
-            const descripcion = document.getElementById('descripcion').value;
-            const fecha_ingreso = new Date().toISOString().slice(0, 10);
-
-            const data = {
-                nombre_estudiante,
-                correo_institucional,
-                asignatura,
-                tipo_solicitud,
-                prioridad,
-                descripcion,
-                fecha_ingreso
-            };
-
-            try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(data)
-                });
-
-                if (response.ok) {
-                    mostrarAlerta('Solicitud registrada exitosamente.', 'success');
-                    formulario.reset();
-                    formulario.classList.remove('was-validated');
-                    obtenerSolicitudes();
-                } else {
-                    const errorData = await response.json();
-                    const detalle = errorData.message || errorData.errores?.join(', ') || 'No se pudo guardar';
-                    mostrarAlerta('Error del servidor: ' + detalle, 'danger');
-                }
-            } catch (error) {
-                mostrarAlerta('Error de conexión con el backend.', 'danger');
-            }
-        });
-
-        async function obtenerSolicitudes() {
-            try {
-                const response = await fetch(API_URL);
-                const result = await response.json();
-                renderizarTabla(result);
-            } catch (error) {
-                mostrarAlerta('No se pudieron cargar las solicitudes', 'warning');
-            }
-        }
-
-        function renderizarTabla(respuesta) {
-            tablaSolicitudes.innerHTML = '';
-            
-            let solicitudes = Array.isArray(respuesta) ? respuesta : (respuesta.data || []);
-            if (!Array.isArray(solicitudes)) return;
-
-            solicitudes.forEach(solicitud => {
-                const tr = document.createElement('tr');
-                
-                tr.innerHTML = `
-                    <td>
-                        <strong>${solicitud.nombre_estudiante}</strong><br>
-                        <small class="text-muted">${solicitud.correo_institucional}</small>
-                    </td>
-                    <td>${solicitud.asignatura}</td>
-                    <td><span class="badge bg-secondary">${solicitud.tipo_solicitud}</span></td>
-                    <td><span class="badge ${obtenerColorPrioridad(solicitud.prioridad)}">${solicitud.prioridad}</span></td>
-                `;
-                tablaSolicitudes.appendChild(tr);
-            });
-        }
-
-        function obtenerColorPrioridad(prioridad) {
-            if (prioridad === 'Alta') return 'bg-danger';
-            if (prioridad === 'Media') return 'bg-warning text-dark';
-            return 'bg-info text-dark';
-        }
-
-        function mostrarAlerta(mensaje, tipo) {
-            alertaMensaje.textContent = mensaje;
-            alertaMensaje.className = `alert alert-${tipo} mt-3 mb-3`;
-            
-            setTimeout(() => {
-                alertaMensaje.classList.add('d-none');
-            }, 5000);
-        }
-    </script>
+    <script src="/js/app.js"></script>
 </body>
 </html>

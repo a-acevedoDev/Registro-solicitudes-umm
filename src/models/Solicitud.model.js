@@ -62,6 +62,42 @@ class SolicitudModel {
     return result.affectedRows > 0;
   }
 
+  static async update(id, solicitudData) {
+    const {
+      nombre_estudiante,
+      correo_institucional,
+      asignatura,
+      tipo_solicitud,
+      descripcion,
+      prioridad,
+      fecha_ingreso = new Date().toISOString().slice(0, 10),
+    } = solicitudData;
+
+    const sql = `
+      UPDATE solicitudes
+      SET nombre_estudiante = ?, correo_institucional = ?, asignatura = ?, tipo_solicitud = ?, descripcion = ?, prioridad = ?, fecha_ingreso = ?
+      WHERE id = ?
+    `;
+
+    const values = [
+      nombre_estudiante,
+      correo_institucional,
+      asignatura,
+      tipo_solicitud,
+      descripcion,
+      prioridad,
+      fecha_ingreso,
+      id,
+    ];
+
+    const [result] = await pool.query(sql, values);
+    if (result.affectedRows === 0) {
+      return null;
+    }
+
+    return { id, ...solicitudData };
+  }
+
   static async findById(id) {
     const sql = 'SELECT * FROM solicitudes WHERE id = ?';
     const [rows] = await pool.query(sql, [id]);

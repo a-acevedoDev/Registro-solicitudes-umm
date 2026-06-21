@@ -7,7 +7,7 @@ const validarCrearSolicitud = [
     .notEmpty().withMessage('El correo es obligatorio'),
   body('asignatura').notEmpty().withMessage('La asignatura es obligatoria'),
   body('tipo_solicitud')
-    .isIn(['Evaluación', 'Asistencia', 'Dudas de Contenidos', 'Problemas de Plataforma', 'Otros'])
+    .isIn(['Evaluación', 'Asistencia', 'Contenidos', 'Plataforma', 'Otro'])
     .withMessage('Tipo de solicitud no válido'),
   body('descripcion')
     .notEmpty().withMessage('La descripción es obligatoria')
