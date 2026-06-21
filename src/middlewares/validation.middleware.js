@@ -7,7 +7,7 @@ const validarCrearSolicitud = [
     .notEmpty().withMessage('El correo es obligatorio'),
   body('asignatura').notEmpty().withMessage('La asignatura es obligatoria'),
   body('tipo_solicitud')
-    .isIn(['Evaluación', 'Asistencia', 'Contenidos', 'Plataforma', 'Otro'])
+    .isIn(['Evaluación', 'Asistencia', 'Dudas de Contenidos', 'Problemas de Plataforma', 'Otros'])
     .withMessage('Tipo de solicitud no válido'),
   body('descripcion')
     .notEmpty().withMessage('La descripción es obligatoria')
@@ -16,8 +16,8 @@ const validarCrearSolicitud = [
     .isIn(['Baja', 'Media', 'Alta'])
     .withMessage('Prioridad no válida'),
   body('fecha_ingreso')
-    .isISO8601().withMessage('Fecha inválida, use formato YYYY-MM-DD')
-    .notEmpty().withMessage('La fecha de ingreso es obligatoria'),
+    .optional({ checkFalsy: true })
+    .isISO8601().withMessage('Fecha inválida, use formato YYYY-MM-DD'),
 ];
 
 const handleValidationErrors = (req, res, next) => {

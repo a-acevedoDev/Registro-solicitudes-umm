@@ -11,7 +11,6 @@ class SolicitudService {
   }
 
   static async crearSolicitud(datos) {
-    
     if (!datos.descripcion || datos.descripcion.length < 10) {
       throw new Error('La descripción debe tener al menos 10 caracteres.');
     }
@@ -21,7 +20,12 @@ class SolicitudService {
       throw new Error('El correo institucional no tiene un formato válido.');
     }
 
-    const nuevaSolicitud = await SolicitudModel.create(datos);
+    const fechaIngreso = datos.fecha_ingreso || new Date().toISOString().slice(0, 10);
+
+    const nuevaSolicitud = await SolicitudModel.create({
+      ...datos,
+      fecha_ingreso: fechaIngreso,
+    });
     return nuevaSolicitud;
   }
 

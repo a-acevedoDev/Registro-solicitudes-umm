@@ -34,7 +34,7 @@ class SolicitudModel {
       tipo_solicitud,
       descripcion,
       prioridad,
-      fecha_ingreso,
+      fecha_ingreso = new Date().toISOString().slice(0, 10),
     } = solicitudData;
 
     const sql = `
